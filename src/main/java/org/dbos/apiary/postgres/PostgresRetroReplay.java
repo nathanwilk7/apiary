@@ -173,7 +173,7 @@ public class PostgresRetroReplay {
 
         // A thread pool for concurrent function executions.
         ExecutorService threadPool = Executors.newFixedThreadPool(workerContext.numWorkersThreads);
-        ExecutorService commitThreadPool = Executors.newCachedThreadPool();
+        ExecutorService commitThreadPool = Executors.newFixedThreadPool(workerContext.numWorkersThreads);
 
         long prepTime = System.currentTimeMillis();
         logger.info("Prepare time: {} ms", prepTime - startTime);
@@ -340,6 +340,16 @@ public class PostgresRetroReplay {
             // Finally, launch this transaction but does not wait.
             pgRpTask.replayTxnID = pgCtxt.txc.txID;
             pgRpTask.resFut = threadPool.submit(new PostgresReplayCallable(pgCtxt, pgRpTask));
+            if ((workerContext.numWorkersThreads == 1) && !workerContext.hasRetroFunctions()) {
+                // Sequential baseline. Does not allow parallel execution. So we must wait for the task to finish and commit.
+                try {
+                    int res = pgRpTask.resFut.get(5, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    logger.error("Sequential execution should not block...");
+                    throw new RuntimeException("Should not fail to wait for an execution to finish.");
+                }
+            }
             pendingCommitTasks.put(resTxId, pgRpTask);
             long t3 = System.nanoTime();
             submitTimes.add(t3 - t2);
