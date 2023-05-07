@@ -54,6 +54,7 @@ class PostgresReplayCallable implements Callable<Integer> {
         // Because Postgres may commit a transaction but take a while for it to show up in the snapshot for the following transactions, wait until we get everything from checkVisibleTxns in the snapshot.
         // We can wait by committing the empty transaction and create a new pgCtxt.
         PostgresContext pgCtxt = new PostgresContext(rpTask.conn, workerContext, ApiaryConfig.systemRole, rpTask.task.execId, rpTask.task.functionID, replayMode, new HashSet<>(), new HashSet<>(), new HashSet<>());
+        logger.debug("Original txnId {} finished getting pgCtxt", originalTxId);
         boolean allVisible = false;
         while (!allVisible) {
             logger.debug("Original TxId {} Checking visible transactions: {}. Current transaction id {}, xmin {}, xmax {}, active transactions {}", originalTxId, checkVisibleTxns.toString(), pgCtxt.txc.txID, pgCtxt.txc.xmin, pgCtxt.txc.xmax, pgCtxt.txc.activeTransactions.toString());
