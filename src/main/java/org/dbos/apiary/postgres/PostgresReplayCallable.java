@@ -28,7 +28,7 @@ class PostgresReplayCallable implements Callable<Integer> {
                                   long originalTxId) {
         this.workerContext = workerContext;
         this.rpTask = rpTask;
-        this.checkVisibleTxns = checkVisibleTxns;
+        this.checkVisibleTxns = new ArrayList<>(checkVisibleTxns);
         this.replayMode = replayMode;
         this.originalTxId = originalTxId;
     }
