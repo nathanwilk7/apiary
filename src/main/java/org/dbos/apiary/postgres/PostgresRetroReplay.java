@@ -254,6 +254,7 @@ public class PostgresRetroReplay {
                         // We have to make sure no other transactions are starting. So wait for pendingStarts to be zero.
                         while (numPendingStarts.get() != 0) {
                             // Busy spin.
+                            logger.info("Debug: num pending starts: {}", numPendingStarts.get());
                         }
                         Future<Long> cmtFut = commitThreadPool.submit(new PostgresCommitCallable(commitPgRpTask, workerContext, cmtTxn, replayMode, threadPool));
                         cleanUpTxns.put(cmtTxn, cmtFut);

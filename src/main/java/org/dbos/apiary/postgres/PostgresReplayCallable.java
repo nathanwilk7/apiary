@@ -37,11 +37,13 @@ class PostgresReplayCallable implements Callable<Integer> {
         // Only support primary functions.
         if (!workerContext.functionExists(rpTask.task.funcName)) {
             logger.debug("Unrecognized function: {}, cannot replay, skipped.", rpTask.task.funcName);
+            numPendingStarts.decrementAndGet();  // Release the lock.
             return -1;
         }
         String type = workerContext.getFunctionType(rpTask.task.funcName);
         if (!workerContext.getPrimaryConnectionType().equals(type)) {
             logger.error("Replay only support primary functions!");
+            numPendingStarts.decrementAndGet();  // Release the lock.
             return -1;
         }
 
