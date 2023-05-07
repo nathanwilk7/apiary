@@ -195,7 +195,6 @@ public class PostgresRetroReplay {
         // Maintain a pool of connections to the backend database to concurrently execute transactions.
         int totalStartOrderTxns = 0;
         int totalExecTxns = 0;
-        List<Long> checkVisibleTxns = new ArrayList<>(); // Committed but not guaranteed to be visible yet.
         while (startOrderRs.next()) {
             long t0 = System.nanoTime();
             totalStartOrderTxns++;
@@ -243,6 +242,7 @@ public class PostgresRetroReplay {
             if (resFuncId > 0) {
                 lastExecTxnId = execIdLastExecTxn.get(resExecId); // Must be not null.
             }
+            List<Long> checkVisibleTxns = new ArrayList<>(); // Committed but not guaranteed to be visible yet.
             for (long cmtTxn : pendingCommitTasks.keySet()) {
                 PostgresReplayTask commitPgRpTask = pendingCommitTasks.get(cmtTxn);
                 if (commitPgRpTask == null) {
