@@ -50,6 +50,7 @@ class PostgresReplayCallable implements Callable<Integer> {
             return -1;
         }
 
+        logger.debug("Starting original txnId {}. Holding the lock.", originalTxId);
         // Because Postgres may commit a transaction but take a while for it to show up in the snapshot for the following transactions, wait until we get everything from checkVisibleTxns in the snapshot.
         // We can wait by committing the empty transaction and create a new pgCtxt.
         PostgresContext pgCtxt = new PostgresContext(rpTask.conn, workerContext, ApiaryConfig.systemRole, rpTask.task.execId, rpTask.task.functionID, replayMode, new HashSet<>(), new HashSet<>(), new HashSet<>());
@@ -85,6 +86,7 @@ class PostgresReplayCallable implements Callable<Integer> {
         rpTask.replayTxnID = pgCtxt.txc.txID;
         pendingStartTxns.remove(originalTxId);
         numPendingStarts.decrementAndGet();  // Release the lock.
+        logger.debug("Original txnId {} finished start. Released the lock.", originalTxId);
 
         PostgresConnection c = (PostgresConnection) pgCtxt.workerContext.getPrimaryConnection();
 
