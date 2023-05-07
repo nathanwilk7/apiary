@@ -180,7 +180,12 @@ public class PostgresRetroReplay {
 
         // A thread pool for concurrent function executions.
         ExecutorService threadPool = Executors.newFixedThreadPool(workerContext.numWorkersThreads);
-        ExecutorService commitThreadPool = Executors.newFixedThreadPool(workerContext.numWorkersThreads);
+        ExecutorService commitThreadPool;
+        if (workerContext.numWorkersThreads > 1) {
+            commitThreadPool = Executors.newCachedThreadPool();
+        } else {
+            commitThreadPool = Executors.newFixedThreadPool(1);
+        }
 
         long prepTime = System.currentTimeMillis();
         logger.info("Prepare time: {} ms", prepTime - startTime);

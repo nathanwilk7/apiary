@@ -69,6 +69,7 @@ class PostgresReplayCallable implements Callable<Integer> {
                 }
             }
             checkVisibleTxns.removeAll(visibleTxns);
+            logger.debug("TxID {} all visible? {}", originalTxId, allVisible);
             if (!allVisible) {
                 try {
                     pgCtxt.conn.commit();
@@ -83,6 +84,7 @@ class PostgresReplayCallable implements Callable<Integer> {
             }
         }
 
+        logger.debug("Original txnId {} finished start. Releasing the lock.", originalTxId);
         rpTask.replayTxnID = pgCtxt.txc.txID;
         pendingStartTxns.remove(originalTxId);
         numPendingStarts.decrementAndGet();  // Release the lock.
