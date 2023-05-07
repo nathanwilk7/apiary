@@ -41,7 +41,6 @@ public class PostgresContext extends ApiaryContext {
                            Set<TransactionContext> activeTransactions, Set<TransactionContext> abortedTransactions,
                            Set<String> replayWrittenTables) {
         super(workerContext, role, execID, functionID, replayMode);
-        logger.debug("Getting postgres context for execId {}", execID);
 
         this.conn = c;
         try {
@@ -88,7 +87,6 @@ public class PostgresContext extends ApiaryContext {
                 }
             }
             this.txc = new TransactionContext(txID, xmin, xmax, activeTxIDs);
-            logger.debug("Finished getting transaction Id {} for execID", txID,execID);
 
             // Look up the original transaction ID if it's a single replay.
             if (replayMode == ApiaryConfig.ReplayMode.SINGLE.getValue()) {
