@@ -56,7 +56,7 @@ class PostgresReplayCallable implements Callable<Integer> {
         PostgresContext pgCtxt = new PostgresContext(rpTask.conn, workerContext, ApiaryConfig.systemRole, rpTask.task.execId, rpTask.task.functionID, replayMode, new HashSet<>(), new HashSet<>(), new HashSet<>());
         boolean allVisible = false;
         while (!allVisible) {
-            logger.debug("Checking visible transactions: {}. Current transaction id {}, xmin {}, xmax {}, active transactions {}", checkVisibleTxns.toString(), pgCtxt.txc.txID, pgCtxt.txc.xmin, pgCtxt.txc.xmax, pgCtxt.txc.activeTransactions.toString());
+            logger.debug("Original TxId {} Checking visible transactions: {}. Current transaction id {}, xmin {}, xmax {}, active transactions {}", originalTxId, checkVisibleTxns.toString(), pgCtxt.txc.txID, pgCtxt.txc.xmin, pgCtxt.txc.xmax, pgCtxt.txc.activeTransactions.toString());
             allVisible = true;
             List<Long> visibleTxns = new ArrayList<>();
             for (long replayCmtTxn : checkVisibleTxns) {
