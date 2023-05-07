@@ -252,7 +252,7 @@ public class PostgresRetroReplay {
                         logger.debug("Don't wait for non-dependent read-only transaction {}.", cmtTxn);
                     } else {
                         // We have to make sure no other transactions are starting. So wait for pendingStarts to be zero.
-                        while (numPendingStarts.get() > 0) {
+                        while (numPendingStarts.get() != 0) {
                             // Busy spin.
                         }
                         Future<Long> cmtFut = commitThreadPool.submit(new PostgresCommitCallable(commitPgRpTask, workerContext, cmtTxn, replayMode, threadPool));
