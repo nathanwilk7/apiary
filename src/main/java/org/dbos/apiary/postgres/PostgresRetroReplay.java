@@ -252,8 +252,9 @@ public class PostgresRetroReplay {
                 if ((cmtTxn < xmax) && !activeTxns.contains(cmtTxn)) {
                     logger.debug("Committing txnID {} because in the snapshot of txn {}", cmtTxn, resTxId);
                     // If it's a non-dependent read-only transaction, do not submit a commit task.
-                    if (workerContext.getFunctionReadOnly(commitPgRpTask.task.funcName) && (cmtTxn != lastExecTxnId)) {
-                        // Wait if it's the dependent task.
+                    if ((workerContext.getFunctionReadOnly(commitPgRpTask.task.funcName) && (cmtTxn != lastExecTxnId))
+                        && (workerContext.numWorkersThreads > 1)) {
+                        // Wait if it's the dependent task, or if it's the sequential baseline.
                         logger.debug("Don't wait for non-dependent read-only transaction {}.", cmtTxn);
                     } else {
                         // We have to make sure no other transactions are starting. So wait for pendingStarts to be zero.
