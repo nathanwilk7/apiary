@@ -47,6 +47,7 @@ public class PostgresRetroReplay {
     private static final Collection<Long> totalTimes = new ConcurrentLinkedQueue<>();
 
     private static void resetReplayState() {
+        numPendingStarts.set(0);
         replayWrittenTables.clear();
         funcSetAccessTables.clear();
         pendingTasks.clear();
