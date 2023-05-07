@@ -22,12 +22,15 @@ class PostgresReplayCallable implements Callable<Integer> {
 
     private final List<Long> checkVisibleTxns;
     private final int replayMode;
+    private final long originalTxId;
 
-    public PostgresReplayCallable(int replayMode, WorkerContext workerContext, PostgresReplayTask rpTask, List<Long> checkVisibleTxns) {
+    public PostgresReplayCallable(int replayMode, WorkerContext workerContext, PostgresReplayTask rpTask, List<Long> checkVisibleTxns,
+                                  long originalTxId) {
         this.workerContext = workerContext;
         this.rpTask = rpTask;
         this.checkVisibleTxns = checkVisibleTxns;
         this.replayMode = replayMode;
+        this.originalTxId = originalTxId;
     }
 
     // Process a replay function/transaction, and resolve dependencies.
@@ -80,6 +83,7 @@ class PostgresReplayCallable implements Callable<Integer> {
         }
 
         rpTask.replayTxnID = pgCtxt.txc.txID;
+        pendingStartTxns.remove(originalTxId);
         numPendingStarts.decrementAndGet();  // Release the lock.
 
         PostgresConnection c = (PostgresConnection) pgCtxt.workerContext.getPrimaryConnection();

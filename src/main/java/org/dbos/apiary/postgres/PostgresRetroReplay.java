@@ -34,6 +34,7 @@ public class PostgresRetroReplay {
 
     // Use to decide whether we have pending transaction start tasks. Plus one before starting a txn, count down after a transaction has started.
     public static final AtomicInteger numPendingStarts = new AtomicInteger(0);
+    public static final Set<Long> pendingStartTxns = ConcurrentHashMap.newKeySet();
 
     // A pending commit map from original transaction ID to Postgres replay task.
     private static final Map<Long, PostgresReplayTask> pendingCommitTasks = new ConcurrentHashMap<>();
@@ -48,6 +49,7 @@ public class PostgresRetroReplay {
 
     private static void resetReplayState() {
         numPendingStarts.set(0);
+        pendingStartTxns.clear();
         replayWrittenTables.clear();
         funcSetAccessTables.clear();
         pendingTasks.clear();
@@ -254,7 +256,7 @@ public class PostgresRetroReplay {
                         // We have to make sure no other transactions are starting. So wait for pendingStarts to be zero.
                         while (numPendingStarts.get() != 0) {
                             // Busy spin.
-                            logger.info("Debug: num pending starts: {}", numPendingStarts.get());
+                            logger.debug("Debug: num pending starts: {}. List of transactions: {}", numPendingStarts.get(), pendingStartTxns);
                         }
                         Future<Long> cmtFut = commitThreadPool.submit(new PostgresCommitCallable(commitPgRpTask, workerContext, cmtTxn, replayMode, threadPool));
                         cleanUpTxns.put(cmtTxn, cmtFut);
@@ -314,12 +316,13 @@ public class PostgresRetroReplay {
             }
             PostgresReplayTask pgRpTask = new PostgresReplayTask(rpTask, currConn);
             numPendingStarts.incrementAndGet();
+            pendingStartTxns.add(resTxId);
 
             long t2 = System.nanoTime();
             prepareTxnTimes.add(t2 - t1);
             // Finally, launch this transaction but does not wait.
 
-            pgRpTask.resFut = threadPool.submit(new PostgresReplayCallable(replayMode, workerContext, pgRpTask, checkVisibleTxns));
+            pgRpTask.resFut = threadPool.submit(new PostgresReplayCallable(replayMode, workerContext, pgRpTask, checkVisibleTxns, resTxId));
             if ((workerContext.numWorkersThreads == 1) && !workerContext.hasRetroFunctions()) {
                 // Sequential baseline. Does not allow parallel execution. So we must wait for the task to finish and commit.
                 try {
@@ -384,7 +387,7 @@ public class PostgresRetroReplay {
                         totalStartOrderTxns++;
                         Task rpTask = execFuncs.get(funcId);
                         PostgresReplayTask pgRpTask = new PostgresReplayTask(rpTask, currConn);
-                        pgRpTask.resFut = threadPool.submit(new PostgresReplayCallable(replayMode, workerContext, pgRpTask, List.of()));
+                        pgRpTask.resFut = threadPool.submit(new PostgresReplayCallable(replayMode, workerContext, pgRpTask, List.of(), -1));
                         pgRpTask.resFut.get(5, TimeUnit.SECONDS);
                         Future<Long> cmtFut = commitThreadPool.submit(new PostgresCommitCallable(pgRpTask, workerContext, pgRpTask.replayTxnID, replayMode, threadPool));
                         cmtFut.get(5, TimeUnit.SECONDS);

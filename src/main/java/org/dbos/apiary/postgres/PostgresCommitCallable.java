@@ -73,7 +73,7 @@ public class PostgresCommitCallable implements Callable<Long> {
                     try {
                         commitPgRpTask.conn.rollback();
                         logger.debug("Rolled back failed to commit transaction {}.", cmtTxn);
-                        commitPgRpTask.resFut = threadPool.submit(new PostgresReplayCallable(replayMode, workerContext, commitPgRpTask, List.of()));
+                        commitPgRpTask.resFut = threadPool.submit(new PostgresReplayCallable(replayMode, workerContext, commitPgRpTask, List.of(), cmtTxn));
                         commitPgRpTask.resFut.get(5, TimeUnit.SECONDS);
                         commitPgRpTask.conn.commit();
                         logger.debug("Committed retried PSQLException transaction {}.", cmtTxn);
