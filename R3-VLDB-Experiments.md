@@ -4,9 +4,20 @@ This document contains instructions to run experiments in our VLDB'23 paper:
 
 **Qian Li**, Peter Kraft, Michael Cafarella, Çağatay Demiralp ,Goetz Graefe, Christos Kozyrakis, Michael Stonebraker, Lalith Suresh, Xiangyao Yu, and Matei Zaharia
 
-[R<sup>3</sup>: Record-Replay-Retroaction for Database-Backed Applications](https://doi.org/10.14778/3551793.3551843)
+[R<sup>3</sup>: Record-Replay-Retroaction for Database-Backed Applications](#)
 
 *Proc. of the VLDB Endowment (PVLDB), Volume 16, Vancouver, BC, Canada, 2023.*
+
+Most record/replay/retroaction code can be found in the following files:
+- [ProvenanceBuffer.java](src/main/java/org/dbos/apiary/function/ProvenanceBuffer.java)
+- [PostgresRetroReplay.java](src/main/java/org/dbos/apiary/postgres/PostgresRetroReplay.java)
+- [PostgresContext.java](src/main/java/org/dbos/apiary/postgres/PostgresContext.java)
+- [PostgresConnection.java](src/main/java/org/dbos/apiary/postgres/PostgresConnection.java)
+
+You can find benchmark source code in the following places:
+- [MoodleBenchmark.java](src/main/java/org/dbos/apiary/benchmarks/retro/MoodleBenchmark.java)
+- [WordPressBenchmark.java](src/main/java/org/dbos/apiary/benchmarks/retro/WordPressBenchmark.java)
+- [TPC-C](src/main/java/org/dbos/apiary/benchmarks/tpcc)
 
 ### Preparation
 
